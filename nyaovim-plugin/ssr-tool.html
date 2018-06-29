@@ -1,0 +1,81 @@
+<dom-module id="ssr-tool">
+	<template>
+		<style>
+			#ssr-tool-elem {
+				padding-left: 10px;
+                padding-bottom: 5px;
+                padding-top: 5px;
+                padding-right: 5px;
+                position: absolute;
+                right: 0px;
+                top: 0px;
+                color: black;
+				background-color: white;
+				border-style: inset;
+				border-left: 5px inset #474641;
+				border-bottom: 3px inset #474641;
+			}
+		</style>
+		<div id="ssr-tool-elem">
+			<button id="CloseBtn" class="close_btn" border-radius="50%">X</button>
+			<input id="SearchTxt" type="text" size=8 placeholder="Search...">
+			<input id="ReplaceTxt" type="text" size=8 placeholder="Replace...">
+			<button id="ReplaceBtn">Replace All</button>
+			<input id="WholeCB" type ="checkbox" font-family="Courier New">Whole Word
+			<input id="SensitiveCB" type ="checkbox" font-family="Courier New">Case Sensitive
+		</div>
+	</template>
+</dom-module>
+
+<script>
+	(function() {
+		Polymer({
+			is: 'ssr-tool',
+			ready: function() {
+
+				var container = document.querySelector('nyaovim-app').shadowRoot.querySelector('ssr-tool').shadowRoot;
+				const editor = document.querySelector('nyaovim-app').editor;
+				const client = editor.getClient();
+				const div_root = container.getElementById("ssr-tool-elem");
+
+				const closeBtn = container.getElementById("CloseBtn");
+				const searchTxt = container.getElementById("SearchTxt");
+				const replaceTxt = container.getElementById("ReplaceTxt");
+				const replaceBtn = container.getElementById("ReplaceBtn");
+				const wholeCB = container.getElementById("WholeCB");
+				const sensitiveCB = container.getElementById("SensitiveCB");
+
+				div_root.style.display = 'none';
+
+				client.on('request', function(method, args, resp) {
+					if (method === 'ssr-tool-start') {
+						div_root.style.display = '';
+						searchTxt.focus();
+						closeBtn.onclick = function() {
+							div_root.style.display = 'none';
+							editor.focus();
+							resp.send(0);
+						}
+						replaceBtn.onclick = function() {
+							div_root.style.display = 'none';
+							editor.focus();
+							if (!wholeCB.checked && !sensitiveCB.checked) {
+								resp.send(1);
+							} else if (wholeCB.checked && !sensitiveCB.checked) {
+								resp.send(2);
+							} else if (!wholeCB.checked && sensitiveCB.checked) {
+								resp.send(3);
+							} else if (wholeCB.checked && sensitiveCB.checked) {
+								resp.send(4);
+							}
+						}
+					} else if (method === 'ssr-tool-search') {
+						resp.send(searchTxt.value);
+					} else if (method === 'ssr-tool-replace') {
+						resp.send(replaceTxt.value);
+					}
+				});
+				client.subscribe('ssr-tool:content');
+			}})
+	})();
+</script>
