@@ -1,4 +1,4 @@
-function! ssr-tool#start() abort
+function! ssr_tool#start() abort
 	let l:mode = rpcrequest(1, 'ssr-tool-start')
 	let l:search = rpcrequest(1, 'ssr-tool-search')
 	let l:replace = rpcrequest(1, 'ssr-tool-replace')
